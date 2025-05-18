@@ -15,6 +15,7 @@ Task 2
 import sys
 from timeit import timeit
 from functools import lru_cache
+import matplotlib.pyplot as plt
 
 
 class Node:
@@ -169,8 +170,25 @@ def generate_fibonacci_test_number() -> list[int]:
     return nums
 
 
-def run_test(numbers: list[int]):
+def run_test(numbers: list[int]) -> list[tuple[int, float, float]]:
     """Function to run the test."""
+
+    results = []
+    for n in numbers:
+        splay_tree = SplayTree()  # Create new Splay Tree for each number
+        fibonacci_lru.cache_clear()  # Clear LRU cache before timing
+        elapsed_time_lru = timeit(lambda n=n: fibonacci_lru(n), number=1)
+        elapsed_time_splay = timeit(
+            lambda n=n, st=splay_tree: fibonacci_splay(n, st), number=1
+        )
+        results.append((n, elapsed_time_lru, elapsed_time_splay))
+
+    return results
+
+
+def show_time_table_results(results: list[tuple[int, float, float]]) -> None:
+    """Function to show time table results."""
+
     print("-" * 52)
     print(
         "| Fibonacci numbers".ljust(20),
@@ -179,13 +197,7 @@ def run_test(numbers: list[int]):
         "|",
     )
     print("-" * 52)
-    for n in numbers:
-        splay_tree = SplayTree()  # Create new Splay Tree for each number
-        fibonacci_lru.cache_clear()  # Clear LRU cache before timing
-        elapsed_time_lru = timeit(lambda n=n: fibonacci_lru(n), number=100)
-        elapsed_time_splay = timeit(
-            lambda n=n, st=splay_tree: fibonacci_splay(n, st), number=100
-        )
+    for n, elapsed_time_lru, elapsed_time_splay in results:
         if elapsed_time_lru < elapsed_time_splay:
             lru_color = "\033[92m"  # Green
             splay_color = "\033[91m"  # Red
@@ -205,13 +217,32 @@ def run_test(numbers: list[int]):
     print("-" * 52)
 
 
+def show_time_graph(results: list[tuple[int, float, float]]) -> None:
+    """Function to show time graph results."""
+    numbers, lru_times, splay_times = [], [], []
+    for n, elapsed_time_lru, elapsed_time_splay in results:
+        numbers.append(n)
+        lru_times.append(elapsed_time_lru)
+        splay_times.append(elapsed_time_splay)
+    plt.plot(numbers, lru_times, label="LRU")
+    plt.plot(numbers, splay_times, label="Splay")
+    plt.legend()
+    plt.tight_layout()
+    plt.xlabel("Fibonacci numbers")
+    plt.ylabel("Time")
+    plt.show()
+
+
 def main():
     """Main function to run the test."""
 
     numbers = generate_fibonacci_test_number()
     sys.setrecursionlimit(5000)
 
-    run_test(numbers)
+    test_results = run_test(numbers)
+    show_time_table_results(test_results)
+    print("\n")
+    show_time_graph(test_results)
 
 
 if __name__ == "__main__":

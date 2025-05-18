@@ -133,6 +133,10 @@ Output time table results for fibonacci numbers calculation:
 
 ```
 
+Output time graph results for fibonacci numbers calculation:
+
+![Time graph results for fibonacci numbers calculation](./image.png)
+
 
 ### Conclusion
 
